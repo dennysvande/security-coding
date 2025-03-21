@@ -1,0 +1,27 @@
+variables:
+  project: "Vulnerable-API"
+  scanner: "."
+
+stages:
+  #- build
+  - test
+
+#build:
+  #stage: build
+  #tags:
+    #- api-vuln-scanner
+  #variables:
+    #build_path: "$project"
+  #script:
+    #- "cd $build_path"
+    #- "nohup python app.py &"
+
+test:
+  stage: test
+  tags:
+  - api-vuln-scanner
+  variables:
+    scanner_path: "$scanner"
+  script:
+    - "cd $scanner_path"
+    - "python vuln-api-scanner.py -u http://10.10.5.130:8000"
