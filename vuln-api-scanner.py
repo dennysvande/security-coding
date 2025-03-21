@@ -61,6 +61,28 @@ class Injection(Scanner):
     
     def xss(self):
         pass
+        """
+        try:
+            if self.args.payload == "default":
+                request_body = {"mathexp": self.ssti_payload}
+                response = requests.post(self.url + "/api/sstivuln", json=request_body, timeout=10)
+                if response.status_code == 200:
+                    print(response.text)
+                    print("Vulnerable to SSTI!\n")
+                else:
+                    print("Not vulnerable")
+            else:
+                for payload in self.ssti_payload.read().splitlines():
+                    request_body = {"mathexp": payload}
+                    response = requests.post(self.url + "/api/sstivuln", json=request_body, timeout=10)
+                    if response.status_code == 200:
+                        print(response.text)
+                        print("Vulnerable to SSTI!\n")
+                    else:
+                        print("Not vulnerable")
+        except Exception as e:
+            print("Encounter an error:", e)
+        """
 
     def sqli(self):
         try:
