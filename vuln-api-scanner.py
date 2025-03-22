@@ -27,7 +27,7 @@ class Scanner:
             self.xss_payload = "<script>alert('Hi')</script>"
             self.sqli_payload = "'or 1=1--"
             self.lfi_payload = "/etc/passwd"
-            self.rfi_payload = "http://127.0.0.1:4444/github-token"
+            self.rfi_payload = "http://127.0.0.1:4444/text"
         else:
             if len(open(self.args.payload).read()) <= 1:
                 raise Exception("Payload file must not be empty")
@@ -37,121 +37,77 @@ class Scanner:
                 self.sqli_payload = open(self.args.payload)
                 self.lfi_payload = open(self.args.payload)
                 self.rfi_payload = open(self.args.payload)
-        
-class Injection(Scanner):
-    def ssti(self):
-        try:
-            if self.args.payload == "default":
-                request_body = {"mathexp": self.ssti_payload}
-                response = requests.post(self.url + "/api/sstivuln", json=request_body, timeout=10)
-                if response.status_code == 200:
-                    print(response.text)
-                    print("Vulnerable to SSTI!\n")
-                else:
-                    print("Not vulnerable")
-            else:
-                for payload in self.ssti_payload.read().splitlines():
-                    request_body = {"mathexp": payload}
-                    response = requests.post(self.url + "/api/sstivuln", json=request_body, timeout=10)
-                    if response.status_code == 200:
-                        print(response.text)
-                        print("Vulnerable to SSTI!\n")
-                    else:
-                        print("Not vulnerable")
-        except Exception as e:
-            print("Encounter an error:", e)
     
-    def xss(self):
+    def exploit_runner(self, endpoint, payloads, parameters, vulnerability):
         try:
             if self.args.payload == "default":
-                request_body = {"username": self.xss_payload}
-                response = requests.post(self.url + "/api/xssreflected", json=request_body, timeout=10)
+                if len(parameters) > 1:
+                    request_body = {parameters[0]: payloads, parameters[1]: payloads}
+                else:
+                    request_body = {parameters[0]: payloads}
+                print(request_body)
+                response = requests.post(self.url + endpoint, json=request_body, timeout=10)
                 if response.status_code == 200:
                     print(response.text)
-                    print("Vulnerable to XSS!\n")
+                    print(f"Vulnerable to {vulnerability}!\n")
                 else:
                     print("Not vulnerable")
             else:
-                for payload in self.xss_payload.read().splitlines():
-                    request_body = {"username": payload}
-                    response = requests.post(self.url + "/api/xssreflected", json=request_body, timeout=10)
+                for payload in payloads.read().splitlines():
+                    if len(parameters) > 1:
+                        request_body = {parameters[0]: payload, parameters[1]: payloads}
+                    else:
+                        request_body = {parameters[0]: payload}
+                    print(request_body)
+                    response = requests.post(self.url + endpoint, json=request_body, timeout=10)
                     if response.status_code == 200:
                         print(response.text)
-                        print("Vulnerable to XSS!\n")
+                        print(f"Vulnerable to {vulnerability}!\n")
                     else:
                         print("Not vulnerable")
         except Exception as e:
             print("Encounter an error:", e)
 
+        
+class Injection(Scanner):
+    def ssti(self):
+        endpoint = "/api/sstivuln"
+        payloads = self.ssti_payload
+        parameters = ["mathexp"]
+        vulnerability = "ssti"
+        self.exploit_runner(endpoint, payloads, parameters, vulnerability)
+    
+    def xss(self):
+        endpoint = "/api/xssreflected"
+        payloads = self.xss_payload
+        parameters = ["username"]
+        vulnerability = "xss"
+        self.exploit_runner(endpoint, payloads, parameters, vulnerability)
+
     def sqli(self):
-        try:
-            if self.args.payload == "default":
-                request_body = {"username": self.sqli_payload, "password": "fakepass"}
-                response = requests.post(self.url + "/api/sqlivuln", json=request_body, timeout=10)
-                if response.status_code == 200:
-                    print(response.text)
-                    print("Vulnerable to SQLi!\n")
-                else:
-                    print("Not vulnerable")
-            else:
-                for payload in self.sqli_payload.read().splitlines():
-                    request_body = {"username": payload, "password": "fakepass"}
-                    response = requests.post(self.url + "/api/sqlivuln", json=request_body, timeout=10)
-                    if response.status_code == 200:
-                        print(response.text)
-                        print("Vulnerable to SQLi!\n")
-                    else:
-                        print("Not vulnerable")
-        except Exception as e:
-            print("Encounter an error:", e)
+        endpoint = "/api/sqlivuln"
+        payloads = self.sqli_payload
+        parameters = ["username", "password"]
+        vulnerability = "sqli"
+        self.exploit_runner(endpoint, payloads, parameters, vulnerability)
 
     def hhi(self):
         pass
 
 class BrokenAccessControl(Scanner):
     def lfi(self):
-        try:
-            if self.args.payload == "default":
-                request_body = {"filename": self.lfi_payload}
-                response = requests.post(self.url + "/api/lfivuln", json=request_body, timeout=10)
-                if response.status_code == 200:
-                    print(response.text)
-                    print("Vulnerable to SSTI!\n")
-                else:
-                    print("Not vulnerable")
-            else:
-                for payload in self.lfi_payload.read().splitlines():
-                    request_body = {"filename": payload}
-                    response = requests.post(self.url + "/api/lfivuln", json=request_body, timeout=10)
-                    if response.status_code == 200:
-                        print(response.text)
-                        print("Vulnerable to LFI!\n")
-                    else:
-                        print("Not vulnerable")
-        except Exception as e:
-            print("Encounter an error:", e)
+        endpoint = "/api/lfivuln"
+        payloads = self.lfi_payload
+        parameters = ["filename"]
+        vulnerability = "lfi"
+        self.exploit_runner(endpoint, payloads, parameters, vulnerability)
 
     def rfi(self):
-        try:
-            if self.args.payload == "default":
-                request_body = {"imagelink": self.rfi_payload}
-                response = requests.post(self.url + "/api/rfivuln", json=request_body, timeout=10)
-                if response.status_code == 200:
-                    print(response.text)
-                    print("Vulnerable to RFI!\n")
-                else:
-                    print("Not vulnerable")
-            else:
-                for payload in self.rfi_payload.read().splitlines():
-                    request_body = {"imagelink": payload}
-                    response = requests.post(self.url + "/api/rfivuln", json=request_body, timeout=10)
-                    if response.status_code == 200:
-                        print(response.text)
-                        print("Vulnerable to RFI!\n")
-                    else:
-                        print("Not vulnerable")
-        except Exception as e:
-            print("Encounter an error:", e)
+        endpoint = "/api/rfivuln"
+        payloads = self.rfi_payload
+        parameters = ["imagelink"]
+        vulnerability = "rfi"
+        self.exploit_runner(endpoint, payloads, parameters, vulnerability)
 
 if __name__ == "__main__":
     args = parser.parse_args()
