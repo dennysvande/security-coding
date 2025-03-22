@@ -1,0 +1,12 @@
+[Unit]
+Description=Gunicorn instance to serve my Flask app
+After=network.target
+
+[Service]
+User=user
+Group=user
+WorkingDirectory=/opt/Vulnerable-API
+ExecStart=/home/user/.local/bin/gunicorn --workers 3 --bind 0.0.0.0:8000 app:app
+
+[Install]
+WantedBy=multi-user.target

@@ -3,18 +3,19 @@ variables:
   scanner: "."
 
 stages:
-  #- build
+  - build
   - test
 
-#build:
-  #stage: build
-  #tags:
-    #- api-vuln-scanner
-  #variables:
-    #build_path: "$project"
-  #script:
-    #- "cd $build_path"
-    #- "nohup python app.py &"
+build:
+  stage: build
+  tags:
+    - api-vuln-scanner
+  variables:
+    build_path: "$project"
+  script:
+    - "cd $build_path"
+    - "sudo -S systemctl daemon-reload < /opt/password.txt"
+    - "sudo -S systemctl start vulnerableapi < /opt/password.txt"
 
 test:
   stage: test
