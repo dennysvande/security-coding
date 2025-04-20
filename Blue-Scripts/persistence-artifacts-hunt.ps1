@@ -4,8 +4,8 @@ Author: Dennys Simbolon
 Date  : 20-04-2025
 
 Script for hunting persistence artifact in Microsoft Windows OS. The script will go through startup folder, registry run key,
-scheduled task, etc and generate a CSV output for further processing. This script must be run with WinRM.
-e.g Invoke-Command -ComputerName 127.0.0.1 -Credential $creds -FilePath .\persistence-artifacts-hunt.ps1
+scheduled task, etc and generate a CSV output which needs to be directed to a file for further processing. This script must be run with WinRM.
+e.g Invoke-Command -ComputerName 127.0.0.1 -Credential $creds -FilePath .\persistence-artifacts-hunt.ps1 | Out-File -FilePath .\persistence-artifacts.csv
 
 """
 
