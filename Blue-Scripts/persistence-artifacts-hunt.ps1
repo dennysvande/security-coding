@@ -34,13 +34,13 @@ function Users_Startup_Persistence {
 function Registry_Persistence {
 	
 	$registry_aseps = @(
-					"HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\",
-					"HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce",
-					"HKLM:\Software\Microsoft\Windows\CurrentVersion\Run",
-					"HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce",
-					"HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run",
-					"HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit"
-					)
+		"HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\",
+		"HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce",
+		"HKLM:\Software\Microsoft\Windows\CurrentVersion\Run",
+		"HKLM:\Software\Microsoft\Windows\CurrentVersion\RunOnce",
+		"HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer\Run",
+		"HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\Userinit"
+	)
 	
 	ForEach ($registry_asep in $registry_aseps){
 		$registry_asep_value = Get-ItemProperty -Path $registry_asep | ForEach-Object {$_.psobject.properties.value} | ForEach-Object {$_.Substring(0, $_.IndexOf(".exe")) } -ErrorAction SilentlyContinue | ForEach-Object { if ($_[0] -eq '"') {$_ + '.exe"'} else {$_ + '.exe'}}
