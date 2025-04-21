@@ -43,7 +43,7 @@ function Registry_Persistence {
 	)
 	
 	ForEach ($registry_asep in $registry_aseps){
-		$registry_asep_value = Get-ItemProperty -Path $registry_asep | ForEach-Object {$_.psobject.properties.value} | ForEach-Object {$_.Substring(0, $_.IndexOf(".exe")) } -ErrorAction SilentlyContinue | ForEach-Object { if ($_[0] -eq '"') {$_ + '.exe"'} else {$_ + '.exe'}}
+		$registry_asep_value = Get-ItemProperty -Path $registry_asep | ForEach-Object {$_.psobject.properties} | ForEach-Object {if ($_.name -ne "PSPath" -and $_.name -ne "PSParentPath" -and $_.name -ne "PSChildName" -and $_.name -ne "PSDrive" -and $_.name -ne "PSProvider") {$_.Value.Substring(0, $_.Value.IndexOf(".exe"))}} -ErrorAction SilentlyContinue | ForEach-Object { if ($_[0] -eq '"') {$_ + '.exe"'} else {$_ + '.exe'}}
 			
 		foreach ($registry_asep_exe in $registry_asep_value){
 			$artifact_path = $registry_asep_exe -split "\\"
