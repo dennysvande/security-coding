@@ -19,9 +19,9 @@ function Users_Startup_Persistence {
 
 	$users_startup_persistence_artifacts = $enabled_local_users | ForEach-Object {Get-ChildItem -Path "C:\Users\$_\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\" -ErrorAction SilentlyContinue}
 
-	$artifacts = $users_startup_persistence_artifacts | Select-Object @{name='Artifact';expression={$_.Name}}, @{name='FilePath';expression={$_.FullName}}, @{name='RegistryPath';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}}, @{name='FileHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='Hostname';expression={$env:COMPUTERNAME}} | ConvertTo-Csv -NoTypeInformation
+	$artifacts = $users_startup_persistence_artifacts | Select-Object @{name='Artifact';expression={$_.Name}}, @{name='FilePath';expression={$_.FullName}}, @{name='RegistryPath';expression={""}}, @{name='RegistryValue';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}}, @{name='FileHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='Hostname';expression={$env:COMPUTERNAME}} | ConvertTo-Csv -NoTypeInformation
 
-	$generic_startup_persistence_artifact = Get-ChildItem -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup" | Select-Object @{name='Artifact';expression={$_.Name}}, @{name='FilePath';expression={$_.FullName}}, @{name='RegistryPath';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}}, @{name='FileHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='Hostname';expression={$env:COMPUTERNAME}} | ConvertTo-Csv -NoTypeInformation
+	$generic_startup_persistence_artifact = Get-ChildItem -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup" | Select-Object @{name='Artifact';expression={$_.Name}}, @{name='FilePath';expression={$_.FullName}}, @{name='RegistryPath';expression={""}}, @{name='RegistryValue';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}}, @{name='FileHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='Hostname';expression={$env:COMPUTERNAME}} | ConvertTo-Csv -NoTypeInformation
 	
 	$full_artifacts = $artifacts + ($generic_startup_persistence_artifact | Select-Object -Skip 1)
 		
@@ -43,36 +43,52 @@ function Registry_Persistence {
 	)
 	
 	ForEach ($registry_asep in $registry_aseps){
-		$registry_asep_value = Get-ItemProperty -Path $registry_asep | ForEach-Object {$_.psobject.properties} | ForEach-Object {if ($_.name -ne "PSPath" -and $_.name -ne "PSParentPath" -and $_.name -ne "PSChildName" -and $_.name -ne "PSDrive" -and $_.name -ne "PSProvider") {$_.Value.Substring(0, $_.Value.IndexOf(".exe"))}} -ErrorAction SilentlyContinue | ForEach-Object { if ($_[0] -eq '"') {$_ + '.exe"'} else {$_ + '.exe'}}
-			
-		foreach ($registry_asep_exe in $registry_asep_value){
-			$artifact_path = $registry_asep_exe -split "\\"
-			$artifact = $artifact_path[-1]
-			$registry_asep_exe_trim = $registry_asep_exe.trim('"')
-			
-			if ($artifact[-1] -eq '"')
+		$registry_asep_properties = Get-ItemProperty -Path $registry_asep | ForEach-Object {$_.psobject.properties}
+		
+		foreach ($registry_asep_property in $registry_asep_properties){
+			if ($registry_asep_property.Name -ne "PSPath" -and $registry_asep_property.Name -ne "PSParentPath" -and $registry_asep_property.Name -ne "PSChildName" -and $registry_asep_property.Name -ne "PSDrive" -and $registry_asep_property.Name -ne "PSProvider")
 			{
-				$artifact_name = $artifact.Substring(0, $artifact.Length - 1)
-				$file_hash = (Get-FileHash -Path $registry_asep_exe_trim).Hash
-			}
-			else
-			{
-				$artifact_name = $artifact
-				$file_hash = (Get-FileHash -Path $registry_asep_exe_trim).Hash
+				$registry_asep_exe = $registry_asep_property.Value.Substring(0, $registry_asep_property.Value.IndexOf(".exe"))
+				
+				if ($registry_asep_exe[0] -eq '"')
+				{
+					$registry_asep_exe = $registry_asep_exe + '.exe"'
+				}
+				else
+				{
+					$registry_asep_exe = $registry_asep_exe + '.exe'
+				}
+								
+				$artifact_path = $registry_asep_exe -split "\\"
+				$artifact = $artifact_path[-1]
+				$registry_asep_exe_trim = $registry_asep_exe.trim('"')
+			
+				if ($artifact[-1] -eq '"')
+				{
+					$artifact_name = $artifact.Substring(0, $artifact.Length - 1)
+					$file_hash = (Get-FileHash -Path $registry_asep_exe_trim).Hash
+				}
+				else
+				{
+					$artifact_name = $artifact
+					$file_hash = (Get-FileHash -Path $registry_asep_exe_trim).Hash
+				}
+				
+				$artifacts = [PSCustomObject]@{
+					Artifact = $artifact_name
+					FilePath = $registry_asep_exe_trim
+					RegistryPath = $registry_asep
+					RegistryValue = $registry_asep_property.Value
+					User = ""
+					FileHash = $file_hash
+					Hostname = $env:COMPUTERNAME
+				}
+				
+				$csv_converted_artifacts = $artifacts | ConvertTo-Csv -NoTypeInformation
+				$csv_converted_artifacts_no_headers = $csv_converted_artifacts | Select-Object -Skip 1
+				$artifacts_data_csv.AppendLine($csv_converted_artifacts_no_headers)
 			}
 			
-			$artifacts = [PSCustomObject]@{
-				Artifact = $artifact_name
-				FilePath = $registry_asep_exe_trim
-				RegistryPath = $registry_asep
-				User = ""
-				FileHash = $file_hash
-				Hostname = $env:COMPUTERNAME
-			}
-			
-			$csv_converted_artifacts = $artifacts | ConvertTo-Csv -NoTypeInformation
-			$csv_converted_artifacts_no_headers = $csv_converted_artifacts | Select-Object -Skip 1
-			$artifacts_data_csv.AppendLine($csv_converted_artifacts_no_headers)
 		}
 		#$acl = Get-Acl -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
 		#Write-Host $acl
