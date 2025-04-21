@@ -19,9 +19,9 @@ function Users_Startup_Persistence {
 
 	$users_startup_persistence_artifacts = $enabled_local_users | ForEach-Object {Get-ChildItem -Path "C:\Users\$_\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\" -ErrorAction SilentlyContinue}
 
-	$artifacts = $users_startup_persistence_artifacts | Select-Object @{name='Artifact';expression={$_.Name}}, @{name='FilePath';expression={$_.FullName}}, @{name='RegistryPath';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}}, @{name='FileHash';expression={(Get-FileHash $_.FullName).Hash}} | ConvertTo-Csv -NoTypeInformation
+	$artifacts = $users_startup_persistence_artifacts | Select-Object @{name='Artifact';expression={$_.Name}}, @{name='FilePath';expression={$_.FullName}}, @{name='RegistryPath';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}}, @{name='FileHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='Hostname';expression={$env:COMPUTERNAME}} | ConvertTo-Csv -NoTypeInformation
 
-	$generic_startup_persistence_artifact = Get-ChildItem -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup" | Select-Object @{name='Artifact';expression={$_.Name}}, @{name='FilePath';expression={$_.FullName}}, @{name='RegistryPath';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}}, @{name='FileHash';expression={(Get-FileHash $_.FullName).Hash}} | ConvertTo-Csv -NoTypeInformation
+	$generic_startup_persistence_artifact = Get-ChildItem -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup" | Select-Object @{name='Artifact';expression={$_.Name}}, @{name='FilePath';expression={$_.FullName}}, @{name='RegistryPath';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}}, @{name='FileHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='Hostname';expression={$env:COMPUTERNAME}} | ConvertTo-Csv -NoTypeInformation
 	
 	$full_artifacts = $artifacts + ($generic_startup_persistence_artifact | Select-Object -Skip 1)
 		
@@ -67,6 +67,7 @@ function Registry_Persistence {
 				RegistryPath = $registry_asep
 				User = ""
 				FileHash = $file_hash
+				Hostname = $env:COMPUTERNAME
 			}
 			
 			$csv_converted_artifacts = $artifacts | ConvertTo-Csv -NoTypeInformation
