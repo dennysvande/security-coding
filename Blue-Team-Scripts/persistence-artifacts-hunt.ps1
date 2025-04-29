@@ -3,9 +3,9 @@
 Author: Dennys Simbolon
 Date  : 20-04-2025
 
-Script for hunting persistence artifact in Microsoft Windows OS. The script will go through startup folder, registry run key,
-scheduled task, etc and generate a CSV output which needs to be directed to a file for further processing. This script must be run with WinRM.
-e.g Invoke-Command -ComputerName 127.0.0.1 -Credential $creds -FilePath .\persistence-artifacts-hunt.ps1 | Out-File -FilePath .\persistence-artifacts.csv
+Script for hunting persistence artifact in Microsoft Windows OS. The script will go through startup folder, registry run key, scheduled task, etc and 
+generate a CSV output which needs to be directed to a file for further processing. This script can be used to scope out incident by searching for compromise host with specific IOC.
+This script must be run with WinRM. e.g Invoke-Command -ComputerName 127.0.0.1 -Credential $creds -FilePath .\persistence-artifacts-hunt.ps1 | Out-File -FilePath .\persistence-artifacts.csv
 
 #>
 
@@ -19,9 +19,9 @@ Function Users_Startup_Persistence {
 
 	$users_startup_persistence_artifacts = $enabled_local_users | ForEach-Object {Get-ChildItem -Path "C:\Users\$_\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\" -ErrorAction SilentlyContinue}
 
-	$artifacts = $users_startup_persistence_artifacts | Select-Object @{name='Artifact';expression={$_.Name}}, @{name='FilePath';expression={$_.FullName}}, @{name='RegistryPath';expression={""}}, @{name='RegistryValue';expression={""}}, @{name='TaskName';expression={""}}, @{name='FullTask';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}}, @{name='FileHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='Hostname';expression={$env:COMPUTERNAME}} | ConvertTo-Csv -NoTypeInformation
+	$artifacts = $users_startup_persistence_artifacts | Select-Object @{name='Hostname';expression={$env:COMPUTERNAME}}, @{name='Artifact';expression={$_.Name}}, @{name='ArtifactPath';expression={$_.FullName}}, @{name='ArtifactHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='IOC';expression={$_.FullName}}, @{name='Technique';expression={"Startup Folder"}}, @{name='RegistryPath';expression={""}}, @{name='TaskName';expression={""}}, @{name='EventConsumerName';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}} | ConvertTo-Csv -NoTypeInformation
 
-	$generic_startup_persistence_artifact = Get-ChildItem -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup" | Select-Object @{name='Artifact';expression={$_.Name}}, @{name='FilePath';expression={$_.FullName}}, @{name='RegistryPath';expression={""}}, @{name='RegistryValue';expression={""}}, @{name='TaskName';expression={""}}, @{name='FullTask';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}}, @{name='FileHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='Hostname';expression={$env:COMPUTERNAME}} | ConvertTo-Csv -NoTypeInformation
+	$generic_startup_persistence_artifact = Get-ChildItem -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup" | Select-Object @{name='Hostname';expression={$env:COMPUTERNAME}}, @{name='Artifact';expression={$_.Name}}, @{name='ArtifactPath';expression={$_.FullName}}, @{name='ArtifactHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='IOC';expression={$_.FullName}}, @{name='Technique';expression={"Startup Folder"}}, @{name='RegistryPath';expression={""}}, @{name='TaskName';expression={""}}, @{name='EventConsumerName';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}} | ConvertTo-Csv -NoTypeInformation
 	
 	$full_artifacts = $artifacts + ($generic_startup_persistence_artifact | Select-Object -Skip 1)
 		
@@ -66,24 +66,24 @@ Function Registry_Persistence {
 				if ($artifact[-1] -eq '"')
 				{
 					$artifact_name = $artifact.Substring(0, $artifact.Length - 1)
-					$file_hash = (Get-FileHash -Path $registry_asep_exe_trim).Hash
 				}
 				else
 				{
 					$artifact_name = $artifact
-					$file_hash = (Get-FileHash -Path $registry_asep_exe_trim).Hash
 				}
 				
 				$artifacts = [PSCustomObject]@{
-					Artifact = $artifact_name
-					FilePath = $registry_asep_exe_trim
-					RegistryPath = $registry_asep
-					RegistryValue = $registry_asep_property.Value
-					TaskName = ""
-					FullTask = ""
-					User = ""
-					FileHash = $file_hash
 					Hostname = $env:COMPUTERNAME
+					Artifact = $artifact_name
+					ArtifactPath = $registry_asep_exe_trim
+					ArtifactHash = (Get-FileHash -Path $registry_asep_exe_trim).Hash
+					IOC = $registry_asep_property.Value
+					Technique = "Registry Run Keys"
+					RegistryPath = $registry_asep
+					TaskName = ""
+					EventConsumerName = ""
+					User = ""
+				
 				}
 				
 				$csv_converted_artifacts = $artifacts | ConvertTo-Csv -NoTypeInformation
@@ -97,7 +97,7 @@ Function Registry_Persistence {
 	}
 }
 
-Function Scheduled_Tasks(){
+Function Scheduled_Tasks_Persistence {
 	$local_users = Get-LocalUser
 
 	$enabled_local_users = $local_users | Where-Object {$_.enabled -eq 'True'}
@@ -109,15 +109,16 @@ Function Scheduled_Tasks(){
 		ForEach ($scheduled_task in $enabled_local_user_scheduled_tasks){
 			
 			$artifacts = [PSCustomObject]@{
-				Artifact = ($scheduled_task.Actions.Execute -split "\\")[-1]
-				FilePath = $scheduled_task.Actions.Execute
-				RegistryPath = ""
-				RegistryValue = ""
-				TaskName = $scheduled_task.TaskName
-				FullTask = $scheduled_task.Actions.Execute + " " + $scheduled_task.Actions.Arguments
-				User = $enabled_local_user.Name
-				FileHash = (Get-FileHash -Path $scheduled_task.Actions.Execute).Hash
 				Hostname = $env:COMPUTERNAME
+				Artifact = ($scheduled_task.Actions.Execute -split "\\")[-1]
+				ArtifactPath = $scheduled_task.Actions.Execute
+				ArtifactHash = (Get-FileHash -Path $scheduled_task.Actions.Execute).Hash
+				IOC = $scheduled_task.Actions.Execute + " " + $scheduled_task.Actions.Arguments
+				Technique = "Scheduled Task"
+				RegistryPath = ""
+				TaskName = $scheduled_task.TaskName
+				EventConsumerName = ""
+				User = $enabled_local_user.Name
 			}
 			
 			$artifacts
@@ -131,12 +132,45 @@ Function Scheduled_Tasks(){
 	#$system_scheduled_task = Get-ScheduledTask | Where-Object {$_.Author -like "*system*"}
 }
 
+Function WMI_Persistence {
+	$wmi_event_consumers = Get-WmiObject -Namespace root\Subscription -Class __EventConsumer
+	
+	ForEach ($wmi_event_consumer in $wmi_event_consumers) {
+		if ($wmi_event_consumer.CommandLineTemplate -ne $null) 
+		{
+			$sid = New-Object System.Security.Principal.SecurityIdentifier($wmi_event_consumer.CreatorSID, 0)
+			$user = $sid.Translate([System.Security.Principal.NTAccount])
+			$user.Value
+						
+			$artifacts = [PSCustomObject]@{
+				Hostname = $wmi_event_consumer.PSComputerName
+				Artifact = ($wmi_event_consumer.CommandLineTemplate -split " ")[0]
+				ArtifactPath = $wmi_event_consumer.ExecutablePath
+				ArtifactHash = ""#(Get-FileHash -Path ($wmi_event_consumer.CommandLineTemplate -split " ")[0]).Hash
+				IOC = $wmi_event_consumer.CommandLineTemplate
+				Technique = "WMI Persistence"
+				RegistryPath = ""
+				TaskName = ""
+				EventConsumerName = $wmi_event_consumer.Name
+				User = $user.Value
+			}
+			
+			$artifacts
+			
+			$csv_converted_artifacts = $artifacts | ConvertTo-Csv -NoTypeInformation
+			$csv_converted_artifacts_no_headers = $csv_converted_artifacts | Select-Object -Skip 1
+			$artifacts_data_csv.AppendLine($csv_converted_artifacts_no_headers)
+		}
+	}
+}
+
 Function Run {
 
 	$users_startup_artifacts = Users_Startup_Persistence
 	$registry_persistence_artifacts = Registry_Persistence
-	$scheduled_task_artifacts = Scheduled_Tasks
-
+	$scheduled_task_artifacts = Scheduled_Tasks_Persistence
+	$wmi_persistence_artifacts = WMI_Persistence
+	
 	return $artifacts_data_csv.ToString()
 	
 }
