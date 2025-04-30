@@ -1,3 +1,18 @@
+<#
+.SYNOPSIS
+    Collect persistence artifacts from remote hosts
+.DESCRIPTION
+    Collect persistence artifacts from remote hosts
+.PARAMETER ComputerName
+    Target hosts / computer
+.PARAMETER Password
+    Password for user to log in to remote hosts
+.PARAMETER Username
+    Username for user to log in to remote hosts
+.EXAMPLE
+    .\hunt.ps1 -ComputerName 127.0.0.1 -Password "insertpassword" -Username "insertusername"
+#>
+
 [CmdletBinding()]
 Param(
 	[String]$ComputerName,
