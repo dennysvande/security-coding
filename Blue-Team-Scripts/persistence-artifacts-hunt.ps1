@@ -165,7 +165,9 @@ Function Run {
 	$registry_persistence_artifacts = Registry_Persistence
 	$scheduled_task_artifacts = Scheduled_Tasks_Persistence
 	$wmi_persistence_artifacts = WMI_Persistence
-		
+			
 }
 
 Run
+
+$artifacts_data_csv.ToString()
