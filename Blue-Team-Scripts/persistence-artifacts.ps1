@@ -160,14 +160,15 @@ Function WMI_Persistence {
 }
 
 Function Run {
-
+	
 	$users_startup_artifacts = Users_Startup_Persistence
 	$registry_persistence_artifacts = Registry_Persistence
 	$scheduled_task_artifacts = Scheduled_Tasks_Persistence
 	$wmi_persistence_artifacts = WMI_Persistence
-			
+	
+	$artifacts_data_csv_array = ($artifacts_data_csv.ToString() -split "`r?`n")
+	$artifacts_data_csv_array[1..($artifacts_data_csv_array.Length -1)]
+	
 }
 
 Run
-
-$artifacts_data_csv.ToString()
