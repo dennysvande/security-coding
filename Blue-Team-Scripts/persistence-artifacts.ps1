@@ -5,7 +5,8 @@ Date  : 20-04-2025
 
 Script for hunting persistence artifact in Microsoft Windows OS. The script will go through startup folder, registry run key, scheduled task, etc and 
 generate a CSV output which needs to be directed to a file for further processing. This script can be used to scope out incident by searching for compromise host with specific IOC.
-This script must be run with WinRM. e.g Invoke-Command -ComputerName 127.0.0.1 -Credential $creds -FilePath .\persistence-artifacts-hunt.ps1 | Out-File -FilePath .\persistence-artifacts.csv
+This script must be run with WinRM. e.g Invoke-Command -ComputerName 127.0.0.1 -Credential $creds -FilePath .\persistence-artifacts-hunt.ps1 | Out-File -FilePath .\persistence-artifacts.csv.
+This script is inspired from SEC504 course.
 
 #>
 
@@ -43,7 +44,7 @@ Function Registry_Persistence {
 	)
 	
 	ForEach ($registry_asep in $registry_aseps){
-		$registry_asep_properties = Get-ItemProperty -Path $registry_asep | ForEach-Object {$_.psobject.properties}
+		$registry_asep_properties = Get-ItemProperty -Path $registry_asep -ErrorAction SilentlyContinue | ForEach-Object {$_.psobject.properties}
 		
 		Foreach ($registry_asep_property in $registry_asep_properties){
 			if ($registry_asep_property.Name -ne "PSPath" -and $registry_asep_property.Name -ne "PSParentPath" -and $registry_asep_property.Name -ne "PSChildName" -and $registry_asep_property.Name -ne "PSDrive" -and $registry_asep_property.Name -ne "PSProvider")
@@ -140,12 +141,33 @@ Function WMI_Persistence {
 		{
 			$sid = New-Object System.Security.Principal.SecurityIdentifier($wmi_event_consumer.CreatorSID, 0)
 			$user = $sid.Translate([System.Security.Principal.NTAccount])
+			
+			$artifact_binary = ($wmi_event_consumer.CommandLineTemplate -split " ")[0]
+			
+			if ($wmi_event_consumer.ExecutablePath -ne $null)
+			{
+				$artifact_hash = (Get-FileHash -Path $wmi_event_consumer.ExecutablePath).Hash
+				$artifact_path = $wmi_event_consumer.ExecutablePath
+			}
+			else
+			{
+				if ((($wmi_event_consumer.CommandLineTemplate -split " ")[0]).Contains("\\"))
+				{
+					$artifact_hash = (Get-FileHash -Path $artifact_binary).Hash
+					$artifact_path = ($wmi_event_consumer.CommandLineTemplate -split " ")[0]
+				}
+				else
+				{
+					$artifact_hash = (Get-FileHash -Path (Get-Command -Name $artifact_binary).Source).Hash
+					$artifact_path = (Get-Command -Name $artifact_binary).Source
+				}
+			}
 						
 			$artifacts = [PSCustomObject]@{
 				Hostname = $wmi_event_consumer.PSComputerName
-				Artifact = ($wmi_event_consumer.CommandLineTemplate -split " ")[0]
-				ArtifactPath = $wmi_event_consumer.ExecutablePath
-				ArtifactHash = ""#(Get-FileHash -Path ($wmi_event_consumer.CommandLineTemplate -split " ")[0]).Hash
+				Artifact = $artifact_binary
+				ArtifactPath = $artifact_path
+				ArtifactHash = $artifact_hash
 				Payload = $wmi_event_consumer.CommandLineTemplate
 				Technique = "WMI Persistence"
 				MitreID = "T1546.003"
