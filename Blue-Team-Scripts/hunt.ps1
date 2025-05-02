@@ -26,7 +26,7 @@ Function Hunt {
 
 	$creds = New-Object System.Management.Automation.PSCredential ($Username, $secure_password)
 
-	$csv_headers = '"Hostname","Artifact","ArtifactPath","ArtifactHash","Payload","Technique","MitreID","RegistryPath","TaskName","EventConsumerName","User"'
+	$csv_headers = '"Hostname","Artifact","ArtifactPath","ArtifactHash","Payload","ATT&CK Technique (ID)","RegistryPath","TaskName","EventConsumerName","User"'
 
 	$csv_headers | Out-File -FilePath "C:\Users\Vande\Documents\Scripts\security-coding\Blue-Team-Scripts\persistence-artifacts.csv"
 
