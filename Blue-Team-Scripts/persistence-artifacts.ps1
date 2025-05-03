@@ -12,6 +12,22 @@ This script is inspired from SEC504 course.
 
 $artifacts_data_csv = [System.Text.StringBuilder]::new()
 
+Function Threat_Intelligence_Analysis {
+	
+	param(
+		[String]$FileHash
+	)
+	
+	$headers=@{}
+	$headers.Add("accept", "application/json")
+	$headers.Add("x-apikey", "f4d19e3fa12e08ce115b50af89be40df80e2e0cb486b20516ee775f529acc260")
+	$response = Invoke-WebRequest -Uri "https://www.virustotal.com/api/v3/files/$FileHash" -Method GET -Headers $headers
+	$ti_result = $response.Content | ConvertFrom-Json
+	#$ti_result.data.attributes.last_analysis_results.CrowdStrike.result
+	return $ti_result.data.attributes.last_analysis_results.Elastic.result
+	
+}
+
 Function Users_Startup_Persistence {
 
 	$local_users = Get-LocalUser
@@ -20,9 +36,9 @@ Function Users_Startup_Persistence {
 
 	$users_startup_persistence_artifacts = $enabled_local_users | ForEach-Object {Get-ChildItem -Path "C:\Users\$_\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup\" -ErrorAction SilentlyContinue}
 
-	$artifacts = $users_startup_persistence_artifacts | Select-Object @{name='Hostname';expression={$env:COMPUTERNAME}}, @{name='Artifact';expression={$_.Name}}, @{name='ArtifactPath';expression={$_.FullName}}, @{name='ArtifactHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='Payload';expression={$_.FullName}}, @{name='"ATT&CK Technique (ID)"';expression={"Startup Folder (T1547.001)"}}, @{name='RegistryPath';expression={""}}, @{name='TaskName';expression={""}}, @{name='EventConsumerName';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}} | ConvertTo-Csv -NoTypeInformation
+	$artifacts = $users_startup_persistence_artifacts | Select-Object @{name='Hostname';expression={$env:COMPUTERNAME}}, @{name='Artifact';expression={$_.Name}}, @{name='ArtifactPath';expression={$_.FullName}}, @{name='ArtifactHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='Payload';expression={$_.FullName}}, @{name='"ATT&CK Technique (ID)"';expression={"Startup Folder (T1547.001)"}}, @{name='"TI Result"';expression={Threat_Intelligence_Analysis -FileHash (Get-FileHash $_.FullName).Hash}}, @{name='RegistryPath';expression={""}}, @{name='TaskName';expression={""}}, @{name='EventConsumerName';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}} | ConvertTo-Csv -NoTypeInformation
 
-	$generic_startup_persistence_artifact = Get-ChildItem -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup" | Select-Object @{name='Hostname';expression={$env:COMPUTERNAME}}, @{name='Artifact';expression={$_.Name}}, @{name='ArtifactPath';expression={$_.FullName}}, @{name='ArtifactHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='Payload';expression={$_.FullName}}, @{name='"ATT&CK Technique (ID)"';expression={"Startup Folder (T1547.001)"}}, @{name='RegistryPath';expression={""}}, @{name='TaskName';expression={""}}, @{name='EventConsumerName';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}} | ConvertTo-Csv -NoTypeInformation
+	$generic_startup_persistence_artifact = Get-ChildItem -Path "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup" | Select-Object @{name='Hostname';expression={$env:COMPUTERNAME}}, @{name='Artifact';expression={$_.Name}}, @{name='ArtifactPath';expression={$_.FullName}}, @{name='ArtifactHash';expression={(Get-FileHash $_.FullName).Hash}}, @{name='Payload';expression={$_.FullName}}, @{name='"ATT&CK Technique (ID)"';expression={"Startup Folder (T1547.001)"}}, @{name='"TI Result"';expression={Threat_Intelligence_Analysis -FileHash (Get-FileHash $_.FullName).Hash}}, @{name='RegistryPath';expression={""}}, @{name='TaskName';expression={""}}, @{name='EventConsumerName';expression={""}}, @{name='User';expression={(Get-Acl $_.FullName).Owner}} | ConvertTo-Csv -NoTypeInformation
 	
 	$full_artifacts = $artifacts + ($generic_startup_persistence_artifact | Select-Object -Skip 1)
 		
@@ -80,6 +96,7 @@ Function Registry_Persistence {
 					ArtifactHash = (Get-FileHash -Path $registry_asep_exe_trim).Hash
 					Payload = $registry_asep_property.Value
 					"ATT&CK Technique (ID)" = "Registry Run Keys (T1547.001)"
+					"TI Result" = Threat_Intelligence_Analysis -FileHash (Get-FileHash -Path $registry_asep_exe_trim).Hash
 					RegistryPath = $registry_asep
 					TaskName = ""
 					EventConsumerName = ""
@@ -99,6 +116,7 @@ Function Registry_Persistence {
 }
 
 Function Scheduled_Tasks_Persistence {
+	
 	$local_users = Get-LocalUser
 
 	$enabled_local_users = $local_users | Where-Object {$_.enabled -eq 'True'}
@@ -116,6 +134,7 @@ Function Scheduled_Tasks_Persistence {
 				ArtifactHash = (Get-FileHash -Path $scheduled_task.Actions.Execute).Hash
 				Payload = $scheduled_task.Actions.Execute + " " + $scheduled_task.Actions.Arguments
 				"ATT&CK Technique (ID)" = "Scheduled Task (T1053.005)"
+				"TI Result" = Threat_Intelligence_Analysis -FileHash (Get-FileHash -Path $scheduled_task.Actions.Execute).Hash
 				RegistryPath = ""
 				TaskName = $scheduled_task.TaskName
 				EventConsumerName = ""
@@ -132,6 +151,7 @@ Function Scheduled_Tasks_Persistence {
 }
 
 Function WMI_Persistence {
+	
 	$wmi_event_consumers = Get-WmiObject -Namespace root\Subscription -Class __EventConsumer
 	
 	ForEach ($wmi_event_consumer in $wmi_event_consumers) {
@@ -168,6 +188,7 @@ Function WMI_Persistence {
 				ArtifactHash = $artifact_hash
 				Payload = $wmi_event_consumer.CommandLineTemplate
 				"ATT&CK Technique (ID)" = "WMI Persistence (T1546.003)"
+				"TI Result" = Threat_Intelligence_Analysis -FileHash $artifact_hash
 				RegistryPath = ""
 				TaskName = ""
 				EventConsumerName = $wmi_event_consumer.Name
@@ -187,6 +208,7 @@ Function Run {
 	$registry_persistence_artifacts = Registry_Persistence
 	$scheduled_task_artifacts = Scheduled_Tasks_Persistence
 	$wmi_persistence_artifacts = WMI_Persistence
+	#Threat_Intelligence_Analysis
 	
 	$artifacts_data_csv_array = ($artifacts_data_csv.ToString() -split "`r?`n")
 	$artifacts_data_csv_array[1..($artifacts_data_csv_array.Length -1)]
