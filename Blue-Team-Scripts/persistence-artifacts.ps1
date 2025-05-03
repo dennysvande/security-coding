@@ -20,7 +20,7 @@ Function Threat_Intelligence_Analysis {
 	
 	$headers=@{}
 	$headers.Add("accept", "application/json")
-	$headers.Add("x-apikey", "f4d19e3fa12e08ce115b50af89be40df80e2e0cb486b20516ee775f529acc260")
+	$headers.Add("x-apikey", "")
 	$response = Invoke-WebRequest -Uri "https://www.virustotal.com/api/v3/files/$FileHash" -Method GET -Headers $headers
 	$ti_result = $response.Content | ConvertFrom-Json
 	#$ti_result.data.attributes.last_analysis_results.CrowdStrike.result
