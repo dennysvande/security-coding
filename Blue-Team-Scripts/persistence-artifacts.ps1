@@ -202,6 +202,9 @@ Function WMI_Persistence {
 	}
 }
 
+Function RMM_Persistence {
+}
+
 Function Run {
 	
 	$users_startup_artifacts = Users_Startup_Persistence
