@@ -18,32 +18,49 @@ Function Malicious_Process_Artifacts {
 	
 	ForEach ($running_process in $running_processes) {
 		
-		ForEach ($yara_rule in $yara_rules) {
-			
-			$yara_scanned_results = C:\Temp\yara\yara64.exe $yara_rule.fullname $running_process.ProcessId --print-strings 2> $null
-			
-			if ($yara_scanned_results -ne $null)
-			{
-				$yara_rule.Name
-				$yara_scanned_results
+		if ($running_process.ProcessName -ne "svchost.exe")
+		{
+			ForEach ($yara_rule in $yara_rules) {
+				
+				$yara_scanned_results = C:\Temp\yara\yara64.exe $yara_rule.fullname $running_process.ProcessId --print-strings 2> $null
+				
+				if ($yara_scanned_results -ne $null)
+				{
+					Write-Host "Scanning Process: "$running_process.ProcessName $running_process.ProcessId", Yara Rule: $yara_rule.Name" -ForegroundColor Green
+					
+					$yara_rule.Name
+					$yara_scanned_results
+					
+					$artifacts = [PSCustomObject]@{
+						Hostname = $hostname
+						"Process Name" = $running_process.ProcessName
+						"Process Command Line" = $running_process.CommandLine
+						"Process Parent" = (Get-Process -Id $running_process.ParentProcessId).Name
+						Artifact = $running_process.ProcessName
+						ArtifactPath = $running_process.Path
+						ArtifactHash = (Get-FileHash -Path $running_process.Path).Hash
+						"IOC Pattern" = $yara_scanned_results
+						"Yara Rule" = $yara_rule.Name
+						"ATT&CK Technique (ID)" = ""
+						"TI Result" = ""
+						User = ""
+					}
+					
+					$csv_converted_artifacts = $artifacts | ConvertTo-Csv -NoTypeInformation
+					$csv_converted_artifacts_no_headers = $csv_converted_artifacts | Select-Object -Skip 1
+					$artifacts_data_csv.AppendLine($csv_converted_artifacts_no_headers)
+				}
+				else
+				{
+					Write-Host "Scanning Process: "$running_process.ProcessName $running_process.ProcessId", Yara Rule: $yara_rule.Name"
+				}
 			}
 		}
+		else
+		{
+			continue
+		}
 	}
-			
-			<#
-			$artifacts = [PSCustomObject]@{
-				Hostname = $hostname
-				"Process Name" = (Get-Process -Id $malicious_process_id).Name
-				"Process Parent" = $running_process_parent
-				Artifact = 
-				ArtifactPath = 
-				ArtifactHash = 
-				"IOC Pattern" = 
-				"ATT&CK Technique (ID)" = 
-				"TI Result" = 
-				User = 
-			}
-			#>
 	
 	Remove-Item -Recurse -Path C:\Temp\yara
 	
@@ -53,4 +70,7 @@ Function Malicious_Process_Artifacts {
 #Function PSReadLine_Artifacts {
 #}
 
-Malicious_Process_Artifacts
+$malicious_process = Malicious_Process_Artifacts
+
+$artifacts_data_csv_array = ($artifacts_data_csv.ToString() -split "`r?`n")
+$artifacts_data_csv_array[1..($artifacts_data_csv_array.Length -1)]
