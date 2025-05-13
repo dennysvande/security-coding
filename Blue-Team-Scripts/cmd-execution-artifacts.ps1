@@ -4,7 +4,7 @@ Author: Dennys Simbolon
 Date  : 12-05-2025
 
 Script for live investigation / hunting of command execution artifact in Microsoft Windows OS such as malicious running process,
-by using Loki scanner with Yara signatures
+by using Loki scanner with Yara signatures.
 
 #>
 
@@ -12,31 +12,29 @@ $artifacts_data_csv = [System.Text.StringBuilder]::new()
 
 Function Malicious_Process_Artifacts {
 	
-	$loki_scanned_results = C:\Temp\loki\loki.exe --nofilescan --nolog --csv
+	$yara_rules = Get-ChildItem -Path C:\Temp\yara\signature-base\yara
 	
-	$running_processess = Get-CimInstance -ClassName Win32_Process
+	$running_processes = Get-CimInstance -ClassName Win32_Process
 	
-	$artifacts = ""
-	$malicious_process = ""
-	$malicious_process_id = ""
-	
-	For ($i=0; $i -lt $loki_scanned_results.Length; $i++){
-		if ($loki_scanned_results[$i].Contains("WARNING"))
-		{
-			Write-Host $loki_scanned_results[$i]
-			Write-Host $loki_scanned_results[$i-1]
-			$loki_scanned_results_array = $loki_scanned_results[$i] -split ","
-			$hostname = $loki_scanned_results_array[1]
-			Write-Host $hostname
-			$malicious_process = $loki_scanned_results[$i]
-			$process_id_start_index = $loki_scanned_results[$i-1].IndexOf("PID: ")
-			$process_id_last_index = $loki_scanned_results[$i-1].IndexOf("NAME:")
-			$malicious_process_id = -join ($loki_scanned_results[$i-1])[($process_id_start_index+5)..($process_id_last_index-2)]
+	ForEach ($running_process in $running_processes) {
+		
+		ForEach ($yara_rule in $yara_rules) {
+			
+			$yara_scanned_results = C:\Temp\yara\yara64.exe $yara_rule.fullname $running_process.ProcessId --print-strings 2> $null
+			
+			if ($yara_scanned_results -ne $null)
+			{
+				$yara_rule.Name
+				$yara_scanned_results
+			}
+		}
+	}
 			
 			<#
 			$artifacts = [PSCustomObject]@{
 				Hostname = $hostname
-				PID = $malicious_process_id
+				"Process Name" = (Get-Process -Id $malicious_process_id).Name
+				"Process Parent" = $running_process_parent
 				Artifact = 
 				ArtifactPath = 
 				ArtifactHash = 
@@ -46,18 +44,8 @@ Function Malicious_Process_Artifacts {
 				User = 
 			}
 			#>
-			
-			ForEach ($running_process in $running_processess) {
-				if ($running_process.ProcessId -eq $malicious_process_id)
-				{
-					$running_process_parent = Get-Process -Id $running_process.ParentProcessId | Select-Object Name
-					$running_process_parent.Name
-				}
-			}
-		}
-	}
 	
-	Remove-Item -Recurse -Path C:\Temp\loki
+	Remove-Item -Recurse -Path C:\Temp\yara
 	
 	#return $artifacts
 }
