@@ -34,7 +34,7 @@ Function Hunt {
 
 	$persistence_artifacts_csv_headers | Out-File -FilePath "C:\Users\Vande\Documents\Scripts\security-coding\Blue-Team-Scripts\persistence-artifacts.csv"
 	
-	$cmd_execution_artifacts_csv_headers = '"Hostname","Process Name","Process Command Line","Process Parent","Artifact","ArtifactPath","ArtifactHash","IOC Pattern","Yara Rule","ATT&CK Technique (ID)","TI Result","User"'
+	$cmd_execution_artifacts_csv_headers = '"Hostname","Process Name","Process Id","Process Command Line","Process Parent","Process Parent Id","Artifact","ArtifactPath","ArtifactHash","IOC Pattern","Yara Rule","ATT&CK Technique (ID)","TI Result","User"'
 	
 	$cmd_execution_artifacts_csv_headers | Out-File -FilePath "C:\Users\Vande\Documents\Scripts\security-coding\Blue-Team-Scripts\cmd_execution_artifacts.csv"
 

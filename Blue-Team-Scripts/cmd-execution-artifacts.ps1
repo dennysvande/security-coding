@@ -10,39 +10,77 @@ by using Loki scanner with Yara signatures.
 
 $artifacts_data_csv = [System.Text.StringBuilder]::new()
 
+Function Threat_Intelligence_Analysis {
+	
+	param(
+		[String]$FileHash
+	)
+	
+	$headers=@{}
+	$headers.Add("accept", "application/json")
+	$headers.Add("x-apikey", "f4d19e3fa12e08ce115b50af89be40df80e2e0cb486b20516ee775f529acc260")
+	$response = Invoke-WebRequest -Uri "https://www.virustotal.com/api/v3/files/$FileHash" -Method GET -Headers $headers
+	$ti_result = $response.Content | ConvertFrom-Json
+	#$ti_result.data.attributes.last_analysis_results.CrowdStrike.result
+	return $ti_result.data.attributes.last_analysis_results.Elastic.result
+	
+}
+
 Function Malicious_Process_Artifacts {
 	
-	$yara_rules = Get-ChildItem -Path C:\Temp\yara\signature-base\yara
+	$yara_rules = Get-ChildItem -Path C:\Temp\yara\signature-base\yara\windows
 	
 	$running_processes = Get-CimInstance -ClassName Win32_Process
-	
+		
 	ForEach ($running_process in $running_processes) {
 		
 		if ($running_process.ProcessName -ne "svchost.exe")
-		{
+		{			
 			ForEach ($yara_rule in $yara_rules) {
 				
-				$yara_scanned_results = C:\Temp\yara\yara64.exe $yara_rule.fullname $running_process.ProcessId --print-strings 2> $null
+				$yara_scanned_results = C:\Temp\yara\yara64.exe $yara_rule.fullname $running_process.ProcessId 2> $null
 				
 				if ($yara_scanned_results -ne $null)
 				{
-					Write-Host "Scanning Process: "$running_process.ProcessName $running_process.ProcessId", Yara Rule: $yara_rule.Name" -ForegroundColor Green
+					$yara_scanned_results_strings_array = [System.Text.StringBuilder]::new()
+								
+					Write-Host "Scanning Process: "$running_process.ProcessName $running_process.ProcessId", Yara Rule: "$yara_rule.Name -ForegroundColor Red
 					
-					$yara_rule.Name
-					$yara_scanned_results
+					#Write-Host $yara_rule.Name
+					#Write-Host $yara_scanned_results
+					#Write-Host $yara_scanned_results.ToString()
+					
+					Foreach ($yara_scanned_results_strings in $yara_scanned_results) {
+						$yara_scanned_results_strings_array.AppendLine($yara_scanned_results_strings)
+					}
+					
+					Write-Host $yara_scanned_results_strings_array
+					
+					$yara_scanned_results_array = ($yara_scanned_results_strings_array.ToString() -split "`r?`n")
+					
+					if ((Get-Process -Id $running_process.ParentProcessId).Name -eq $null)
+					{
+						$process_parent = ""
+					}
+					else
+					{
+						$process_parent = (Get-Process -Id $running_process.ParentProcessId).Name + ".exe"
+					}
 					
 					$artifacts = [PSCustomObject]@{
-						Hostname = $hostname
+						Hostname = $env:COMPUTERNAME
 						"Process Name" = $running_process.ProcessName
+						"Process Id" = $running_process.ProcessId
 						"Process Command Line" = $running_process.CommandLine
-						"Process Parent" = (Get-Process -Id $running_process.ParentProcessId).Name
+						"Process Parent" = $process_parent
+						"Process Parent Id" = $running_process.ParentProcessId
 						Artifact = $running_process.ProcessName
 						ArtifactPath = $running_process.Path
 						ArtifactHash = (Get-FileHash -Path $running_process.Path).Hash
-						"IOC Pattern" = $yara_scanned_results
+						"IOC Pattern" = $yara_scanned_results_array -join ";"
 						"Yara Rule" = $yara_rule.Name
 						"ATT&CK Technique (ID)" = ""
-						"TI Result" = ""
+						"TI Result" = Threat_Intelligence_Analysis -FileHash (Get-FileHash -Path $running_process.Path).Hash
 						User = ""
 					}
 					
@@ -52,7 +90,7 @@ Function Malicious_Process_Artifacts {
 				}
 				else
 				{
-					Write-Host "Scanning Process: "$running_process.ProcessName $running_process.ProcessId", Yara Rule: $yara_rule.Name"
+					Write-Host "Scanning Process: "$running_process.ProcessName $running_process.ProcessId", Yara Rule: "$yara_rule.Name -ForegroundColor Green
 				}
 			}
 		}
@@ -73,4 +111,9 @@ Function Malicious_Process_Artifacts {
 $malicious_process = Malicious_Process_Artifacts
 
 $artifacts_data_csv_array = ($artifacts_data_csv.ToString() -split "`r?`n")
-$artifacts_data_csv_array[1..($artifacts_data_csv_array.Length -1)]
+#$artifacts_data_csv_array[1..($artifacts_data_csv_array.Length -1)]
+
+
+#Write-Host $artifacts_data_csv_array[1..($artifacts_data_csv_array.Length -1)]
+#Write-Host $artifacts_data_csv_array
+$artifacts_data_csv_array
