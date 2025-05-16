@@ -30,12 +30,14 @@ Function Malicious_Process_Artifacts {
 	
 	$yara_rules = Get-ChildItem -Path C:\Temp\yara\signature-base\yara\windows
 	
-	$running_processes = Get-CimInstance -ClassName Win32_Process
+	$running_processes = Get-WmiObject -Class Win32_Process
 		
 	ForEach ($running_process in $running_processes) {
 		
 		if ($running_process.ProcessName -ne "svchost.exe")
-		{			
+		{
+			$process_owner = $running_process.GetOwner().Domain + "\" + $running_process.GetOwner().User
+			
 			ForEach ($yara_rule in $yara_rules) {
 				
 				$yara_scanned_results = C:\Temp\yara\yara64.exe $yara_rule.fullname $running_process.ProcessId 2> $null
@@ -44,11 +46,7 @@ Function Malicious_Process_Artifacts {
 				{
 					$yara_scanned_results_strings_array = [System.Text.StringBuilder]::new()
 								
-					Write-Host "Scanning Process: "$running_process.ProcessName $running_process.ProcessId", Yara Rule: "$yara_rule.Name -ForegroundColor Red
-					
-					#Write-Host $yara_rule.Name
-					#Write-Host $yara_scanned_results
-					#Write-Host $yara_scanned_results.ToString()
+					Write-Host "Scanning Process: "$running_process.ProcessName $running_process.ProcessId", Yara Rule: "$yara_rule.Name", Process Owner: "$process_owner -ForegroundColor Red
 					
 					Foreach ($yara_scanned_results_strings in $yara_scanned_results) {
 						$yara_scanned_results_strings_array.AppendLine($yara_scanned_results_strings)
@@ -75,13 +73,13 @@ Function Malicious_Process_Artifacts {
 						"Process Parent" = $process_parent
 						"Process Parent Id" = $running_process.ParentProcessId
 						Artifact = $running_process.ProcessName
-						ArtifactPath = $running_process.Path
+						ArtifactPath = $running_process.ExecutablePath
 						ArtifactHash = (Get-FileHash -Path $running_process.Path).Hash
 						"IOC Pattern" = $yara_scanned_results_array -join ";"
 						"Yara Rule" = $yara_rule.Name
 						"ATT&CK Technique (ID)" = ""
 						"TI Result" = Threat_Intelligence_Analysis -FileHash (Get-FileHash -Path $running_process.Path).Hash
-						User = ""
+						User = $process_owner
 					}
 					
 					$csv_converted_artifacts = $artifacts | ConvertTo-Csv -NoTypeInformation
@@ -90,7 +88,7 @@ Function Malicious_Process_Artifacts {
 				}
 				else
 				{
-					Write-Host "Scanning Process: "$running_process.ProcessName $running_process.ProcessId", Yara Rule: "$yara_rule.Name -ForegroundColor Green
+					Write-Host "Scanning Process: "$running_process.ProcessName $running_process.ProcessId", Yara Rule: "$yara_rule.Name", Process Owner: "$process_owner -ForegroundColor Green
 				}
 			}
 		}
@@ -111,9 +109,5 @@ Function Malicious_Process_Artifacts {
 $malicious_process = Malicious_Process_Artifacts
 
 $artifacts_data_csv_array = ($artifacts_data_csv.ToString() -split "`r?`n")
-#$artifacts_data_csv_array[1..($artifacts_data_csv_array.Length -1)]
 
-
-#Write-Host $artifacts_data_csv_array[1..($artifacts_data_csv_array.Length -1)]
-#Write-Host $artifacts_data_csv_array
 $artifacts_data_csv_array
