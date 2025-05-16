@@ -10,7 +10,7 @@ for a 24 hour period. The log is sourced from windows Sysmon event log.
 
 $artifacts_data_csv = [System.Text.StringBuilder]::new()
 
-Function Outbound_Connection {
+Function Network_Connection {
 	$network_connections = Get-WinEvent -filterhashtable @{logname="Microsoft-Windows-Sysmon/Operational"; StartTime="05/16/2025 00:00:00"; EndTime="05/16/2025 18:00:00"; id=3}
 	ForEach ($network_connection in $network_connections) {
 		if (($network_connection.Message -split "\n")[5].Contains("Teams.exe"))
@@ -38,7 +38,7 @@ Function Outbound_Connection {
 	}
 }
 
-$outbound_connection = Outbound_Connection
+$network_connection = Network_Connection
 
 $artifacts_data_csv_array = ($artifacts_data_csv.ToString() -split "`r?`n")
 
