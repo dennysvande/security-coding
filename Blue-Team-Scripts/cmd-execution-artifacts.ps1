@@ -3,7 +3,7 @@
 Author: Dennys Simbolon
 Date  : 12-05-2025
 
-Script for live investigation / hunting of command execution artifact in Microsoft Windows OS such as malicious running process,
+Script for live investigation / hunting of command execution artifact in Microsoft Windows OS such as malicious/suspicious running process,
 by using Loki scanner with Yara signatures.
 
 #>
@@ -26,7 +26,7 @@ Function Threat_Intelligence_Analysis {
 	
 }
 
-Function Malicious_Process_Artifacts {
+Function Get-SuspicousProcess {
 	
 	$yara_rules = Get-ChildItem -Path C:\Temp\yara\signature-base\yara\windows
 	
@@ -106,7 +106,7 @@ Function Malicious_Process_Artifacts {
 #Function PSReadLine_Artifacts {
 #}
 
-$malicious_process = Malicious_Process_Artifacts
+$malicious_process = Get-SuspicousProcess
 
 $artifacts_data_csv_array = ($artifacts_data_csv.ToString() -split "`r?`n")
 

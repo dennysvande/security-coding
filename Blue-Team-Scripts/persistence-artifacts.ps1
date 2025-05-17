@@ -28,7 +28,7 @@ Function Threat_Intelligence_Analysis {
 	
 }
 
-Function Users_Startup_Persistence {
+Function Get-StartupPersistence {
 
 	$local_users = Get-LocalUser
 
@@ -48,7 +48,7 @@ Function Users_Startup_Persistence {
 	
 }
 
-Function Registry_Persistence {
+Function Get-RegistryPersistence {
 	
 	$registry_aseps = @(
 		"HKCU:\Software\Microsoft\Windows\CurrentVersion\Run\",
@@ -115,7 +115,7 @@ Function Registry_Persistence {
 	}
 }
 
-Function Scheduled_Tasks_Persistence {
+Function Get-ScheduledTaskPersistence {
 	
 	$local_users = Get-LocalUser
 
@@ -150,7 +150,7 @@ Function Scheduled_Tasks_Persistence {
 	#$system_scheduled_task = Get-ScheduledTask | Where-Object {$_.Author -like "*system*"}
 }
 
-Function WMI_Persistence {
+Function Get-WMIPersistence {
 	
 	$wmi_event_consumers = Get-WmiObject -Namespace root\Subscription -Class __EventConsumer
 	
@@ -202,16 +202,15 @@ Function WMI_Persistence {
 	}
 }
 
-Function RMM_Persistence {
+Function Get-RMMPersistence {
 }
 
 Function Run {
 	
-	$users_startup_artifacts = Users_Startup_Persistence
-	$registry_persistence_artifacts = Registry_Persistence
-	$scheduled_task_artifacts = Scheduled_Tasks_Persistence
-	$wmi_persistence_artifacts = WMI_Persistence
-	#Threat_Intelligence_Analysis
+	$users_startup_artifacts = Get-StartupPersistence
+	$registry_persistence_artifacts = Get-RegistryPersistence
+	$scheduled_task_artifacts = Get-ScheduledTaskPersistence
+	$wmi_persistence_artifacts = Get-WMIPersistence
 	
 	$artifacts_data_csv_array = ($artifacts_data_csv.ToString() -split "`r?`n")
 	$artifacts_data_csv_array[1..($artifacts_data_csv_array.Length -1)]

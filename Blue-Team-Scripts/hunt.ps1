@@ -10,14 +10,14 @@
 .PARAMETER Username
     Username for user to log in to remote hosts
 .EXAMPLE
-    .\hunt.ps1 -ComputerName 127.0.0.1 -Password "insertpassword" -Username "insertusername"
+    .\hunt.ps1 -ComputerName 127.0.0.1 -Username "insertusername" -Password "insertpassword"
 #>
 
 [CmdletBinding()]
 Param(
 	[Array]$ComputerName,
-	[String]$Password,
-	[String]$Username
+	[String]$Username,
+	[String]$Password
 )
 
 Function Hunt {
@@ -34,11 +34,11 @@ Function Hunt {
 
 	#$persistence_artifacts_csv_headers | Out-File -FilePath "C:\Users\Vande\Documents\Scripts\security-coding\Blue-Team-Scripts\persistence-artifacts.csv"
 	
-	#$cmd_execution_artifacts_csv_headers = '"Hostname","Process Name","Process Id","Process Command Line","Process Parent","Process Parent Id","Artifact","ArtifactPath","ArtifactHash","IOC Pattern","Yara Rule","ATT&CK Technique (ID)","TI Result","User"'
+	#$cmd_execution_artifacts_csv_headers = 'Hostname,Process Name,Process Id,Process Command Line,Process Parent,Process Parent Id,Artifact,ArtifactPath,ArtifactHash,IOC Pattern,Yara Rule,ATT&CK Technique (ID),TI Result,User'
 	
 	#$cmd_execution_artifacts_csv_headers | Out-File -FilePath "C:\Users\Vande\Documents\Scripts\security-coding\Blue-Team-Scripts\cmd-execution-artifacts.csv"
 	
-	$network_connection_artifacts_csv_headers = '"Detected Date","Event Source","Image","User","Initiated","SourceHostname","SourceIp","SourcePort","DestinationHostname","DestinationIp","DestinationPort"'
+	$network_connection_artifacts_csv_headers = 'Detected Date,Event Source,Image,ProcessId,User,Initiated,SourceHostname,SourceIP,SourcePort,DestinationHostname,DestinationIP,DestinationPort'
 	
 	$network_connection_artifacts_csv_headers | Out-File -FilePath "C:\Users\Vande\Documents\Scripts\security-coding\Blue-Team-Scripts\network-connection-artifacts.csv"
 
