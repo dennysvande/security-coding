@@ -11,14 +11,16 @@ for a 24 hour period. The log is sourced from windows Sysmon event log.
 $artifacts_data_csv = [System.Text.StringBuilder]::new()
 
 Function Get-NetworkConnection {
-	$network_connections = Get-WinEvent -filterhashtable @{logname="Microsoft-Windows-Sysmon/Operational"; StartTime="05/17/2025 00:00:00"; EndTime="05/17/2025 23:59:00"; id=3}
+	$network_connections = Get-WinEvent -filterhashtable @{logname="Microsoft-Windows-Sysmon/Operational"; StartTime="05/17/2025 00:00:00"; EndTime="05/17/2025 23:59:59"; id=3}
 	ForEach ($network_connection in $network_connections) {
 		$network_connection_attributes = ($network_connection.Message -split "\n")
 		
 		$artifacts = [PSCustomObject]@{
+			"Hostname" = $env:COMPUTERNAME
 			"Detected Date" = ($network_connection.TimeCreated).ToString("yyyy-MM-dd HH:mm:ss")
 			"Event Source" = $network_connection.ProviderName
-			"Image" = (($network_connection_attributes[5] -split " ", 2)[1]).TrimEnd("`r", "`n")
+			"Image(Artifact)" = (($network_connection_attributes[5] -split " ", 2)[1]).TrimEnd("`r", "`n")
+			"ArtifactPath" = (($network_connection_attributes[5] -split " ", 2)[1]).TrimEnd("`r", "`n")
 			"ProcessId" = (($network_connection_attributes[4] -split " ", 2)[1]).TrimEnd("`r", "`n")
 			"User" = (($network_connection_attributes[6] -split " ", 2)[1]).TrimEnd("`r", "`n")
 			"Initiated" = (($network_connection_attributes[8] -split " ", 2)[1]).TrimEnd("`r", "`n")
