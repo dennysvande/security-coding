@@ -10,26 +10,18 @@
 .PARAMETER Username
     Username for user to log in to remote hosts
 .EXAMPLE
-    .\hunt.ps1 -Computers 127.0.0.1 -Username "insertusername" -Password "insertpassword"
+    .\hunt.ps1 -Computers 127.0.0.1 -Username "insertusername" -Password "insertpassword" -Action "[Hunt|Collect]"
 #>
 
 [CmdletBinding()]
 Param(
 	[Array]$Computers,
 	[String]$Username,
-	[String]$Password
+	[String]$Password,
+	[String]$Action
 )
 
-Function Hunt {
-	
-	$artifacts_directories = @("persistence-artifacts", "cmd-execution-artifacts", "network-connection-artifacts")
-	
-	ForEach ($computer in $Computers){
-		mkdir -Name $computer -ErrorAction SilentlyContinue
-		ForEach ($artifacts_directory in $artifacts_directories){
-			mkdir -Name ".\$computer\$artifacts_directory" -ErrorAction SilentlyContinue
-		}
-	}
+Function Get-IOC {
 
 	$secure_password = ConvertTo-SecureString $Password -AsPlainText -Force
 
@@ -59,16 +51,43 @@ Function Hunt {
 	
 	#Invoke-Command -Session $session -FilePath .\network-connection-artifacts.ps1 | Out-File -FilePath .\network-connection-artifacts.csv -Append
 	
-	$artifacts_hunt_output_csv = @("persistence-artifacts", "cmd-execution-artifacts", "network-connection-artifacts")
+}
+
+Function Get-Artifacts {
 	
-	ForEach ($output_csv in $artifacts_hunt_output_csv){
-		$artifacts = Import-Csv ".\$output_csv.csv"
+	$secure_password = ConvertTo-SecureString $Password -AsPlainText -Force
+
+	$creds = New-Object System.Management.Automation.PSCredential ($Username, $secure_password)
+	
+	$artifacts_categories = @("persistence-artifacts", "cmd-execution-artifacts", "network-connection-artifacts")
+	
+	ForEach ($computer in $Computers){
+		mkdir -Name $computer -ErrorAction SilentlyContinue
+		ForEach ($artifacts_category in $artifacts_categories){
+			mkdir -Name ".\$computer\$artifacts_category" -ErrorAction SilentlyContinue
+		}
+	}
+	
+	ForEach ($artifacts_category in $artifacts_categories){
+		$artifacts = Import-Csv ".\$artifacts_category.csv"
 		ForEach ($artifact in $artifacts){
 			$session = New-PSSession -ComputerName $artifact.Hostname -Credential $creds
-			Copy-Item -FromSession $session -Path $artifact.ArtifactPath -Destination (".\" + $artifact.Hostname + "\" + $output_csv)
+			Copy-Item -FromSession $session -Path $artifact.ArtifactPath -Destination (".\" + $artifact.Hostname + "\" + $artifacts_category)
 		}
+	}
+}
+
+Function Run {
+	
+	if ($Action -eq "Hunt")
+	{
+		Get-IOC
+	}
+	else if ($Action -eq "Collect")
+	{
+		Get-Artifacts
 	}
 	
 }
 
-Hunt
+Run
