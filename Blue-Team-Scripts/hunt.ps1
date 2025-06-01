@@ -46,7 +46,7 @@ Function Get-IOC {
 	#Invoke-Command -Session $session -FilePath .\persistence-artifacts.ps1 | Out-File -FilePath .\persistence-artifacts.csv -Append
 
 	#Invoke-Command -Session $session -FilePath .\persistence-artifacts.ps1 | foreach {($_ -split ",")[3]}
-
+	
 	#Invoke-Command -Session $session -FilePath .\cmd-execution-artifacts.ps1 | Out-File -FilePath .\cmd-execution-artifacts.csv -Append
 	
 	#Invoke-Command -Session $session -FilePath .\network-connection-artifacts.ps1 | Out-File -FilePath .\network-connection-artifacts.csv -Append

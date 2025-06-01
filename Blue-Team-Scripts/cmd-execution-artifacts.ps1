@@ -103,6 +103,10 @@ Function Get-SuspicousProcess {
 	#return $artifacts
 }
 
+Function Get-ProcessCreate {
+	
+}
+
 #Function PSReadLine_Artifacts {
 #}
 
