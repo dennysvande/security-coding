@@ -1,0 +1,88 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Vande\\Documents\\Scripts\\security-coding\\Red-Team-Scripts\\OpsImplant\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{B61BB1E6-6716-4070-A7F5-7863E371C0DE}|OpsImplant.vcxproj|C:\\Users\\Vande\\Documents\\Scripts\\security-coding\\Red-Team-Scripts\\OpsImplant\\task.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{B61BB1E6-6716-4070-A7F5-7863E371C0DE}|OpsImplant.vcxproj|solutionrelative:task.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B61BB1E6-6716-4070-A7F5-7863E371C0DE}|OpsImplant.vcxproj|C:\\Users\\Vande\\Documents\\Scripts\\security-coding\\Red-Team-Scripts\\OpsImplant\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{B61BB1E6-6716-4070-A7F5-7863E371C0DE}|OpsImplant.vcxproj|solutionrelative:main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B61BB1E6-6716-4070-A7F5-7863E371C0DE}|OpsImplant.vcxproj|C:\\Users\\Vande\\Documents\\Scripts\\security-coding\\Red-Team-Scripts\\OpsImplant\\task.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{B61BB1E6-6716-4070-A7F5-7863E371C0DE}|OpsImplant.vcxproj|solutionrelative:task.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{B61BB1E6-6716-4070-A7F5-7863E371C0DE}|OpsImplant.vcxproj|C:\\Users\\Vande\\Documents\\Scripts\\security-coding\\Red-Team-Scripts\\OpsImplant\\resolve_eat.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{B61BB1E6-6716-4070-A7F5-7863E371C0DE}|OpsImplant.vcxproj|solutionrelative:resolve_eat.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 2,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "resolve_eat.h",
+              "DocumentMoniker": "C:\\Users\\Vande\\Documents\\Scripts\\security-coding\\Red-Team-Scripts\\OpsImplant\\resolve_eat.h",
+              "RelativeDocumentMoniker": "resolve_eat.h",
+              "ToolTip": "C:\\Users\\Vande\\Documents\\Scripts\\security-coding\\Red-Team-Scripts\\OpsImplant\\resolve_eat.h",
+              "RelativeToolTip": "resolve_eat.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-06-12T05:05:51.388Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "task.h",
+              "DocumentMoniker": "C:\\Users\\Vande\\Documents\\Scripts\\security-coding\\Red-Team-Scripts\\OpsImplant\\task.h",
+              "RelativeDocumentMoniker": "task.h",
+              "ToolTip": "C:\\Users\\Vande\\Documents\\Scripts\\security-coding\\Red-Team-Scripts\\OpsImplant\\task.h",
+              "RelativeToolTip": "task.h",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-06-12T05:05:50.559Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "task.cpp",
+              "DocumentMoniker": "C:\\Users\\Vande\\Documents\\Scripts\\security-coding\\Red-Team-Scripts\\OpsImplant\\task.cpp",
+              "RelativeDocumentMoniker": "task.cpp",
+              "ToolTip": "C:\\Users\\Vande\\Documents\\Scripts\\security-coding\\Red-Team-Scripts\\OpsImplant\\task.cpp",
+              "RelativeToolTip": "task.cpp",
+              "ViewState": "AgIAAEUAAAAAAAAAAAAAAEoAAAAUAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-06-12T05:05:48.833Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "main.cpp",
+              "DocumentMoniker": "C:\\Users\\Vande\\Documents\\Scripts\\security-coding\\Red-Team-Scripts\\OpsImplant\\main.cpp",
+              "RelativeDocumentMoniker": "main.cpp",
+              "ToolTip": "C:\\Users\\Vande\\Documents\\Scripts\\security-coding\\Red-Team-Scripts\\OpsImplant\\main.cpp",
+              "RelativeToolTip": "main.cpp",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-06-12T05:05:47.202Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

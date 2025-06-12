@@ -1,0 +1,7 @@
+﻿  OpsImplant.cpp
+C:\Users\Vande\Documents\Tools\Evasion\GetProcAddressManual\OpsImplant\OpsImplant.cpp(74,9): warning C4101: 'thhandle': unreferenced local variable
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 3 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  OpsImplant.vcxproj -> C:\Users\Vande\Documents\Tools\Evasion\GetProcAddressManual\GetProcAddressManual\x64\Release\OpsImplant.exe
