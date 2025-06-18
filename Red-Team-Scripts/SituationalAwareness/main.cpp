@@ -16,8 +16,24 @@
 #pragma comment(lib, "iphlpapi.lib")
 
 
-void LogError(void) {
-	//todo
+void DisplayError(DWORD errorCode) {
+
+	DWORD dwFlags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
+	LPCVOID lpSource = NULL;
+	DWORD dwMessageId = errorCode;
+	DWORD dwLanguageId = NULL;
+	LPWSTR msgBuffer = NULL;
+	DWORD nSize = NULL;
+	DWORD retVal;
+
+	retVal = FormatMessageW(dwFlags, lpSource, dwMessageId, dwLanguageId, (LPWSTR)&msgBuffer, nSize, NULL);
+
+	if (retVal == NULL) {
+		printf("Failed to get error message with error: %d\n", GetLastError());
+	}
+	else {
+		printf("Encounter an error: %ls\n", msgBuffer);
+	}
 }
 
 void GetSysinfo(void) {
@@ -67,10 +83,9 @@ void GetHostname(void) {
 
 	if (hostname != NULL) {
 		printf("%ls\n", buffer);
-		return;
 	}
 	else {
-		printf("Failed to get hostname with error: %d\n", GetLastError());
+		DisplayError(GetLastError());
 	}
 }
 
@@ -89,8 +104,7 @@ void GetWhoami(void) {
 		printf("%ls\n", userName);
 	}
 	else {
-		printf("Encounter an error: %d\n", GetLastError());
-		return;
+		DisplayError(GetLastError());
 	}
 }
 
@@ -115,8 +129,7 @@ void GetUsers(void) {
 		}
 	}
 	else {
-		printf("Encounter an error: %d\n", GetLastError());
-		return;
+		DisplayError(nStatus);
 	}
 
 	NetApiBufferFree(bufPtr);
@@ -146,7 +159,7 @@ void GetUserInfo(wchar_t * user) {
 		return;
 	}
 	else {
-		printf("Failed to get user detail with error: %d\n", GetLastError());
+		DisplayError(netStatus);
 	}
 
 }
@@ -199,7 +212,7 @@ void GetRemoteProcesses(void) {
 	BOOL procEnum = WTSEnumerateProcessesExW(hServer, &dwLevel, SessionId, &processInfo, &dwCount);
 
 	if (procEnum == 0) {
-		printf("Process enumeration failed with error: %d\n", GetLastError());
+		DisplayError(GetLastError());
 		return;
 	}
 
@@ -237,7 +250,8 @@ void GetProcesses(void) {
 	HANDLE procSnapshot = CreateToolhelp32Snapshot(dwFlags, th32ProcessID);
 
 	if (procSnapshot == INVALID_HANDLE_VALUE) {
-		printf("Process snapshot failed with error: %d\n", GetLastError());
+		DisplayError(GetLastError());
+		//printf("Process snapshot failed with error: %d\n", GetLastError());
 		return;
 	}
 
@@ -267,6 +281,7 @@ void GetDirectoryList(wchar_t * directory) {
 	HANDLE fileSearch = FindFirstFileW(directoryPath, &findFileData);
 
 	if (fileSearch == INVALID_HANDLE_VALUE) {
+		DisplayError(GetLastError());
 		return;
 	}
 
@@ -309,6 +324,7 @@ void GetIpconfig(void) {
 		 */
 		wsaDataRetVal = WSAStartup(MAKEWORD(2, 2), &wsaData);
 		if (wsaDataRetVal != 0) {
+			DisplayError(wsaDataRetVal);
 			return;
 		}
 		PIP_ADAPTER_ADDRESSES pCurrentAdapter = pAdapterAddresses;
@@ -326,8 +342,10 @@ void GetIpconfig(void) {
 		}
 	}
 	else {
-		printf("Failed to get IP Address info with error: %d\n", GetLastError());
+		DisplayError(ulRetVal);
 	}
+
+	free(pAdapterAddresses);
 }
 
 int wmain(int argc, wchar_t * argv[]){

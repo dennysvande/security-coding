@@ -39,7 +39,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\xoredbase64task.ico">
+    <Image Include="..\..\..\..\Tools\task.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

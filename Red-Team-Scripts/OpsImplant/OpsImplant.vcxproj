@@ -135,7 +135,7 @@
     <ResourceCompile Include="OpsImplant.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="..\..\..\xoredbase64task.ico" />
+    <Image Include="..\..\..\..\Tools\task.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

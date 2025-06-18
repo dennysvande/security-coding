@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Users\Vande\Documents\Scripts\SEC670-Labs\chapter2\SituationalAwareness\x64\Release\SituationalAwareness.exe</FullPath>
+      <FullPath>C:\Users\Vande\Documents\Scripts\security-coding\Red-Team-Scripts\SituationalAwareness\x64\Release\SituationalAwareness.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />
