@@ -1,0 +1,55 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\Vande\\Documents\\Scripts\\SEC670-Labs\\chapter2\\SituationalAwareness\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{F0A14D5A-AB91-4BDB-82BF-101CAD3EF457}|SituationalAwareness.vcxproj|C:\\Users\\Vande\\Documents\\Scripts\\SEC670-Labs\\chapter2\\SituationalAwareness\\main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F0A14D5A-AB91-4BDB-82BF-101CAD3EF457}|SituationalAwareness.vcxproj|solutionrelative:main.cpp||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{F0A14D5A-AB91-4BDB-82BF-101CAD3EF457}|SituationalAwareness.vcxproj|C:\\Users\\Vande\\Documents\\Scripts\\SEC670-Labs\\chapter2\\SituationalAwareness\\helperstructs.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}",
+      "RelativeMoniker": "D:0:0:{F0A14D5A-AB91-4BDB-82BF-101CAD3EF457}|SituationalAwareness.vcxproj|solutionrelative:helperstructs.h||{D0E1A5C6-B359-4E41-9B60-3365922C2A22}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "main.cpp",
+              "DocumentMoniker": "C:\\Users\\Vande\\Documents\\Scripts\\SEC670-Labs\\chapter2\\SituationalAwareness\\main.cpp",
+              "RelativeDocumentMoniker": "main.cpp",
+              "ToolTip": "C:\\Users\\Vande\\Documents\\Scripts\\SEC670-Labs\\chapter2\\SituationalAwareness\\main.cpp",
+              "RelativeToolTip": "main.cpp",
+              "ViewState": "AgIAABQBAAAAAAAAAAAAACgBAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000677|",
+              "WhenOpened": "2025-06-13T15:25:31.592Z",
+              "IsPinned": true,
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "helperstructs.h",
+              "DocumentMoniker": "C:\\Users\\Vande\\Documents\\Scripts\\SEC670-Labs\\chapter2\\SituationalAwareness\\helperstructs.h",
+              "RelativeDocumentMoniker": "helperstructs.h",
+              "ToolTip": "C:\\Users\\Vande\\Documents\\Scripts\\SEC670-Labs\\chapter2\\SituationalAwareness\\helperstructs.h",
+              "RelativeToolTip": "helperstructs.h",
+              "ViewState": "AgIAAGAAAAAAAAAAAAAAABcAAAAcAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000680|",
+              "WhenOpened": "2025-06-14T12:35:14.342Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
