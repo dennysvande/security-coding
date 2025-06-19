@@ -18,6 +18,10 @@
 
 void DisplayError(DWORD errorCode) {
 
+	/*
+	 * Convert system error code number to meaningful and human-readable error message.
+	 */
+
 	DWORD dwFlags = FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS;
 	LPCVOID lpSource = NULL;
 	DWORD dwMessageId = errorCode;
@@ -269,7 +273,7 @@ void GetProcesses(void) {
 void GetDirectoryList(wchar_t * directory) {
 
 	/*
-	 * List directory content
+	 * List directory content.
 	 */
 	
 	wchar_t directoryPath[MAX_PATH];
@@ -348,10 +352,124 @@ void GetIpconfig(void) {
 	free(pAdapterAddresses);
 }
 
+void GetRegKey(wchar_t * regKey) {
+
+	/*
+	 * Retrieve registry keys and values on a local machine.
+	 */
+
+	/* 
+	 * strip out the hive key (or find the address of the first '\' in regKey 
+	 * (i.e HKLM\SOFTWARE\MICROSOFT\WINDOWS\CURRENTVERSION\RUN)
+	 */
+	wchar_t *subKeyStr = wcschr(regKey, L'\\');
+	subKeyStr++; // Point to the next character/address after the first '\', [S]OFTWARE
+
+	wchar_t rootKey[6];
+	wcsncpy_s(rootKey, regKey, 4); // Copy only the hive key to the new buffer.
+	HKEY hRootKey;
+
+	if (lstrcmpiW(rootKey, L"HKLM") == 0) {
+		hRootKey = HKEY_LOCAL_MACHINE;
+	}
+	else if (lstrcmpiW(rootKey, L"HKCU") == 0){
+		hRootKey = HKEY_CURRENT_USER;
+	}
+	else if (lstrcmpiW(rootKey, L"HKCR") == 0) {
+		hRootKey = HKEY_CLASSES_ROOT;
+	}
+	else if (lstrcmpiW(rootKey, L"HKCC") == 0) {
+		hRootKey = HKEY_CURRENT_CONFIG;
+	}
+	else if (lstrcmpiW(rootKey, L"HKU") == 0) {
+		hRootKey = HKEY_USERS;
+	}
+	else {
+		hRootKey = NULL;
+	}
+
+	LPCWSTR subKey = subKeyStr; //L"SOFTWARE\MICROSOFT\WINDOWS\CURRENTVERSION\Run";
+	DWORD options = NULL;
+	REGSAM samDesired = KEY_ALL_ACCESS;
+	HKEY regHandle;
+	LSTATUS lOpenKeyResult;
+
+	/*
+	 * Open a handle to registry key to be passed to RegQueryInfoKeyW and RegEnum* function
+	 */
+	lOpenKeyResult = RegOpenKeyExW(hRootKey, subKey, options, samDesired, &regHandle);
+	if (lOpenKeyResult == ERROR_SUCCESS) {
+
+		DWORD numSubKey;
+		DWORD szSubKeyMax;
+		DWORD numValue;
+		DWORD szValueNameMax;
+		DWORD szValueDataMax;
+
+		/* Retrieve detail information on specified registry key. */
+		LSTATUS lRegQueryResult = RegQueryInfoKeyW(regHandle, NULL, NULL, NULL, &numSubKey, &szSubKeyMax, NULL, &numValue, &szValueNameMax, &szValueDataMax, NULL, NULL);
+
+		if (lRegQueryResult == ERROR_SUCCESS) {
+			if (numSubKey) {
+				printf("Enumerate registry subkeys: %ls\n", regKey);
+				for (DWORD i = 0; i < numSubKey; i++) {
+					wchar_t subKeyName[MAX_KEY_LENGTH];
+					DWORD szSubKeyName = szSubKeyMax + 1;
+					LSTATUS lEnumKeyResult;
+
+					/* Enumerate reigstry subkeys. */
+					lEnumKeyResult = RegEnumKeyExW(regHandle, i, subKeyName, &szSubKeyName, NULL, NULL, NULL, NULL);
+					if (lEnumKeyResult == ERROR_SUCCESS) {
+						printf("Subkey keys: %ls\n", subKeyName);
+					}
+					else {
+						DisplayError(lEnumKeyResult);
+					}
+				}
+			}
+
+			printf("\n");
+
+			if (numValue) {
+				printf("Enumerate registry subkey value: %ls\n", regKey);
+				for (DWORD i = 0; i < numValue; i++) {
+					wchar_t valueName[MAX_VALUE_NAME];
+					BYTE valueData[MAX_VALUE_DATA];
+					DWORD szValueName = szValueNameMax + 1;
+					DWORD szValueData = szValueDataMax + 1;
+					LSTATUS lEnumValueResult;
+
+					/* 
+					 * Enumerate registry subkey values and print the value name
+					 * and its data to stdout. 
+					 */
+					lEnumValueResult = RegEnumValueW(regHandle, i, valueName, &szValueName, NULL, NULL, valueData, &szValueData);
+
+					if (lEnumValueResult == ERROR_SUCCESS) {
+						printf("%ls: ", valueName);
+						printf("%ls\n", valueData);
+					}
+					else {
+						DisplayError(lEnumValueResult);
+					}
+				}
+			}
+		}
+		else {
+			DisplayError(lRegQueryResult);
+		}
+	}
+	else {
+		DisplayError(lOpenKeyResult);
+	}
+
+
+}
+
 int wmain(int argc, wchar_t * argv[]){
 
 	if (argc <= 1) {
-		printf("Usage: %ls [whoami|net|sysinfo|process|\"remote process\"|ls]", argv[0]);
+		printf("Usage: %ls [whoami|net|sysinfo|ps|\"remote ps\"|ls|ipconfig]", argv[0]);
 	}
 	else if (lstrcmpiW(argv[1], L"hostname") == 0) {
 		GetHostname();
@@ -365,10 +483,10 @@ int wmain(int argc, wchar_t * argv[]){
 	else if (lstrcmpiW(argv[1], L"hotfixes") == 0) {
 		GetHotfixes();
 	}
-	else if (lstrcmpiW(argv[1], L"process") == 0) {
+	else if (lstrcmpiW(argv[1], L"ps") == 0) {
 		GetProcesses();
 	}
-	else if (lstrcmpiW(argv[1], L"remote process") == 0) {
+	else if (lstrcmpiW(argv[1], L"remote ps") == 0) {
 		GetRemoteProcesses();
 	}
 	else if (lstrcmpiW(argv[1], L"ls") == 0) {
@@ -393,6 +511,9 @@ int wmain(int argc, wchar_t * argv[]){
 	}
 	else if (lstrcmpiW(argv[1], L"ipconfig") == 0) {
 		GetIpconfig();
+	}
+	else if (lstrcmpiW(argv[1], L"reg") == 0) {
+		GetRegKey(argv[2]);
 	}
 
 	return 0;

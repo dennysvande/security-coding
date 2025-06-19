@@ -14,6 +14,7 @@
 #include <wtsapi32.h>
 #include <ws2tcpip.h>
 #include <tlhelp32.h>
+#include <shlwapi.h>
 #include <combaseapi.h>
 #include <LM.h>
 
@@ -25,6 +26,9 @@
 
 #define PROCESSOR_FEATURE_MAX 64
 #define KUSER_SHARED_DATA_ADDRESS 0x7FFE0000
+#define MAX_KEY_LENGTH 255
+#define MAX_VALUE_NAME 16383
+#define MAX_VALUE_DATA 16383
 
 typedef enum _NT_PRODUCT_TYPE
 {

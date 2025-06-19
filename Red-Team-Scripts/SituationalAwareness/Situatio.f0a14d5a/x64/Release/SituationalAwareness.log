@@ -1,6 +1,14 @@
 ﻿  main.cpp
+C:\Users\Vande\Documents\Scripts\security-coding\Red-Team-Scripts\SituationalAwareness\main.cpp(450,14): warning C4477: 'printf' : format string '%ls' requires an argument of type 'wchar_t *', but variadic argument 1 has type 'BYTE *'
+      C:\Users\Vande\Documents\Scripts\security-coding\Red-Team-Scripts\SituationalAwareness\main.cpp(450,14):
+      consider using '%hs' in the format string
+      C:\Users\Vande\Documents\Scripts\security-coding\Red-Team-Scripts\SituationalAwareness\main.cpp(450,14):
+      consider using '%s' in the format string
+      C:\Users\Vande\Documents\Scripts\security-coding\Red-Team-Scripts\SituationalAwareness\main.cpp(450,14):
+      consider using '%Ts' in the format string
+  
   Generating code
   Previous IPDB not found, fall back to full compilation.
-  All 17 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  All 20 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   SituationalAwareness.vcxproj -> C:\Users\Vande\Documents\Scripts\security-coding\Red-Team-Scripts\SituationalAwareness\x64\Release\SituationalAwareness.exe
